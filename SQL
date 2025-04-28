@@ -1,0 +1,363 @@
+CREATE DATABASE IF NOT EXISTS pokemon;
+USE pokemon;
+
+-- Tabla Jugador
+CREATE TABLE Jugador (
+    id_jugador INT,
+    nombre VARCHAR(16) NOT NULL,
+    nickname VARCHAR(16) NOT NULL,
+    correo VARCHAR(30) NOT NULL,
+    contraseña VARCHAR(24) NOT NULL,
+    nivel INT DEFAULT 1,
+    PRIMARY KEY (id_jugador)
+);
+
+-- Tabla Partida
+CREATE TABLE Partida (
+    id_partida INT AUTO_INCREMENT,
+    id_jugador1 INT NOT NULL,
+    id_jugador2 INT NOT NULL,
+    turnos INT DEFAULT 0,
+    estado ENUM('en curso', 'finalizado') DEFAULT 'en curso',
+    fecha_inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_fin DATETIME,
+    ganador INT,
+    PRIMARY KEY (id_partida),
+    FOREIGN KEY (id_jugador1) REFERENCES Jugador(id_jugador),
+    FOREIGN KEY (id_jugador2) REFERENCES Jugador(id_jugador),
+    FOREIGN KEY (ganador) REFERENCES Jugador(id_jugador)
+);
+
+
+-- Tabla Carta_Premio (para las cartas de premio)
+CREATE TABLE Carta_Premio (
+    id_premio INT AUTO_INCREMENT DEFAULT 0,
+    id_carta INT NOT NULL,
+    id_jugador INT NOT NULL,
+    id_partida INT NOT NULL,
+    nombre VARCHAR(16) NOT NULL,
+    estado ENUM('pendiente', 'reclamada') DEFAULT 'pendiente',
+    cuenta INT DEFAULT 0,
+    PRIMARY KEY (id_premio),
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta),
+    FOREIGN KEY (id_jugador) REFERENCES Jugador(id_jugador),
+    FOREIGN KEY (id_partida) REFERENCES Partida(id_partida)
+);
+
+-- Tabla Baraja (mazos de cada jugador)
+CREATE TABLE Baraja (
+    id_baraja INT AUTO_INCREMENT,
+    id_jugador INT NOT NULL,
+    cantidad_cartas INT DEFAULT 60,
+    PRIMARY KEY (id_baraja),
+    FOREIGN KEY (id_jugador) REFERENCES Jugador(id_jugador)
+);
+
+-- Tabla Carta (carta genérica)
+CREATE TABLE Carta (
+    id_carta INT AUTO_INCREMENT,
+    nombre VARCHAR(16) NOT NULL,
+    tipo ENUM('pokemon', 'energia', 'partidario') NOT NULL,
+    PRIMARY KEY (id_carta)
+);
+
+-- Tabla Turno
+CREATE TABLE Turno (
+    id_turno INT AUTO_INCREMENT,
+    id_partida INT NOT NULL,
+    id_jugador INT NOT NULL,
+    id_carta INT,
+    numero INT DEFAULT 0,
+    operaciones_realizadas INT DEFAULT 0,
+    PRIMARY KEY (id_turno),
+    FOREIGN KEY (id_partida) REFERENCES Partida(id_partida),
+    FOREIGN KEY (id_jugador) REFERENCES Jugador(id_jugador),
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta)
+);
+
+-- Tabla Energia (cartas de energía)
+CREATE TABLE Energia (
+    id_energia INT AUTO_INCREMENT,
+    id_carta INT NOT NULL,
+    nombre VARCHAR(16) NOT NULL,
+    tipo VARCHAR(16) NOT NULL,
+    PRIMARY KEY (id_energia),
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta)
+);
+
+-- Tabla Pokemon (cartas de Pokémon)
+CREATE TABLE Pokemon (
+    id_pokemon INT AUTO_INCREMENT,
+    id_tipo INT NOT NULL,
+    id_carta INT NOT NULL,
+    nombre VARCHAR(20) NOT NULL,
+    evolucion VARCHAR(24),
+    puntos_salud INT NOT NULL,
+    estado ENUM('banca', 'jugando', 'muerto') DEFAULT 'banca',
+    PRIMARY KEY (id_pokemon),
+    FOREIGN KEY (id_tipo) REFERENCES Tipo(id_tipo),
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta)
+);
+
+-- Tabla Partidario (cartas de entrenador/objeto/estadio)
+CREATE TABLE Partidario (
+    id_partidario INT AUTO_INCREMENT,
+    id_carta INT NOT NULL,
+    nombre VARCHAR(20) NOT NULL,
+    tipo ENUM('herramienta', 'estadio', 'entrenador') NOT NULL,
+    id_habilidad INT,
+    PRIMARY KEY (id_partidario),
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta),
+    FOREIGN KEY (id_habilidad) REFERENCES Habilidad(id_carta)
+);
+
+-- Tabla Tipo
+CREATE TABLE Tipo (
+    id_tipo INT AUTO_INCREMENT,
+    nombre VARCHAR(20) NOT NULL,
+    fortaleza VARCHAR(20),
+    debilidad VARCHAR(20),
+    PRIMARY KEY (id_tipo)
+);
+
+-- Tabla Ataque
+CREATE TABLE Ataque (
+    id_ataque INT AUTO_INCREMENT,
+    id_habilidad INT NOT NULL,
+    id_pokemon INT NOT NULL,
+    id_tipo INT NOT NULL,
+    nombre VARCHAR(30) NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    daño INT NOT NULL,
+    efecto TEXT,
+    PRIMARY KEY (id_ataque),
+    FOREIGN KEY (id_habilidad) REFERENCES Habilidad(id_carta),
+    FOREIGN KEY (id_pokemon) REFERENCES Pokemon(id_pokemon),
+    FOREIGN KEY (id_tipo) REFERENCES Tipo(id_tipo)
+);
+
+-- Tabla Estado (para condiciones especiales)
+CREATE TABLE Estado (
+    id_estado INT AUTO_INCREMENT,
+    id_pokemon INT NOT NULL,
+    nombre VARCHAR(12) NOT NULL,
+    tipo ENUM('nada', 'dormido', 'paralizado', 'quemado', 'confundido', 'envenenado') DEFAULT 'nada',
+    PRIMARY KEY (id_estado),
+    FOREIGN KEY (id_pokemon) REFERENCES Pokemon(id_pokemon)
+);
+
+-- Tabla Habilidad (para ataques y habilidades)
+-- no me se las habilidades de cada uno o si se repiten xd
+CREATE TABLE Habilidad (
+    id_carta INT NOT NULL,
+    nombre VARCHAR(30) NOT NULL,
+    efecto TEXT,
+    PRIMARY KEY (id_carta),
+    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta)
+);
+
+-- Insertar datos en la tabla Jugador
+INSERT INTO Jugador (id_jugador, nombre, nickname, correo, contraseña, nivel) VALUES
+(1, 'Juan Pérez', 'Ash123', 'juan@mail.com', 'pass123', 10),
+(2, 'María López', 'Misty22', 'maria@mail.com', 'secure456', 8),
+(3, 'Carlos Ruiz', 'Brock77', 'carlos@mail.com', 'pokemon789', 12),
+(4, 'Ana Torres', 'May2000', 'ana@mail.com', 'pikachu1', 7),
+(5, 'Pedro Díaz', 'OakProf', 'pedro@mail.com', 'labpass22', 15),
+(6, 'Laura Gómez', 'Jessie_R', 'laura@mail.com', 'teamR2022', 9),
+(7, 'Miguel Sanz', 'James_R', 'miguel@mail.com', 'rocket123', 9),
+(8, 'Sofía Ramírez', 'Joy_Nurse', 'sofia@mail.com', 'center456', 11),
+(9, 'David Silva', 'Gary_Oak', 'david@mail.com', 'rival789', 14),
+(10, 'Elena Castro', 'Dawn_Blue', 'elena@mail.com', 'piplup123', 8),
+(11, 'Mario Bros', 'Red_Master', 'mario@mail.com', 'master456', 20),
+(12, 'Lucía Vargas', 'Serena_XY', 'lucia@mail.com', 'fennekin7', 6);
+
+-- Insertando datos en la tabla Partida
+INSERT INTO Partida (id_partida, id_jugador1, id_jugador2, turnos, estado, fecha_inicio, fecha_fin, ganador) VALUES
+(1, 1, 2, 10, 'finalizado', '2023-01-10 14:30:00', '2023-01-10 15:15:00', 1),
+(2, 3, 4, 8, 'finalizado', '2023-01-11 16:20:00', '2023-01-11 17:00:00', 3),
+(3, 5, 6, 15, 'finalizado', '2023-01-12 10:45:00', '2023-01-12 11:40:00', 5),
+(4, 7, 8, 12, 'finalizado', '2023-01-13 19:30:00', '2023-01-13 20:15:00', 8),
+(5, 9, 10, 7, 'finalizado', '2023-01-14 09:15:00', '2023-01-14 09:50:00', 9),
+(6, 11, 12, 20, 'finalizado', '2023-01-15 13:40:00', '2023-01-15 14:50:00', 11),
+(7, 1, 3, 5, 'en curso', '2023-01-16 15:10:00', NULL, NULL),
+(8, 2, 4, 3, 'en curso', '2023-01-16 16:30:00', NULL, NULL),
+(9, 5, 7, 8, 'en curso', '2023-01-16 17:45:00', NULL, NULL),
+(10, 6, 8, 6, 'en curso', '2023-01-16 18:20:00', NULL, NULL),
+(11, 9, 11, 4, 'en curso', '2023-01-16 19:10:00', NULL, NULL),
+(12, 10, 12, 2, 'en curso', '2023-01-16 20:00:00', NULL, NULL);
+
+-- Insertando datos en la tabla Carta_Premio
+INSERT INTO Carta_Premio (id_premio, id_carta, id_jugador, id_partida, nombre, estado, cuenta) VALUES
+(1, 1, 1, 1, 'Pikachu', 'reclamada', 1),
+(2, 2, 1, 1, 'Charizard', 'pendiente', 0),
+(3, 3, 2, 1, 'Blastoise', 'pendiente', 0),
+(4, 4, 2, 1, 'Venusaur', 'pendiente', 0),
+(5, 5, 3, 2, 'Mewtwo', 'reclamada', 1),
+(6, 6, 3, 2, 'Poción', 'reclamada', 1),
+(7, 7, 4, 2, 'Energía Fuego', 'pendiente', 0),
+(8, 8, 5, 3, 'Energía Agua', 'reclamada', 1),
+(9, 9, 6, 3, 'Energía Planta', 'pendiente', 0),
+(10, 10, 7, 4, 'Eevee', 'reclamada', 1),
+(11, 11, 8, 4, 'Centro Pokémon', 'reclamada', 1),
+(12, 12, 9, 5, 'Snorlax', 'reclamada', 1),
+(13, 13, 10, 5, 'Energía Eléctrica', 'pendiente', 0),
+(14, 14, 11, 6, 'Revivir', 'reclamada', 1),
+(15, 15, 12, 6, 'Jigglypuff', 'pendiente', 0);
+
+-- Insertar datos en la tabla Baraja
+INSERT INTO Baraja (id_baraja, id_jugador, cantidad_cartas) VALUES
+(1, 1, 60),
+(2, 2, 60),
+(3, 3, 60),
+(4, 4, 55),
+(5, 5, 60),
+(6, 6, 58),
+(7, 7, 60),
+(8, 8, 60),
+(9, 9, 60),
+(10, 10, 57),
+(11, 11, 60),
+(12, 12, 59);
+
+-- Insertar datos en la tabla Carta
+INSERT INTO Carta (id_carta, nombre, tipo) VALUES
+(1, 'Pikachu', 'pokemon'),
+(2, 'Charizard', 'pokemon'),
+(3, 'Blastoise', 'pokemon'),
+(4, 'Venusaur', 'pokemon'),
+(5, 'Mewtwo', 'pokemon'),
+(6, 'Poción', 'partidario'),
+(7, 'Energía Fuego', 'energia'),
+(8, 'Energía Agua', 'energia'),
+(9, 'Energía Planta', 'energia'),
+(10, 'Eevee', 'pokemon'),
+(11, 'Centro Pokémon', 'partidario'),
+(12, 'Snorlax', 'pokemon'),
+(13, 'Energía Eléctrica', 'energia'),
+(14, 'Revivir', 'partidario'),
+(15, 'Jigglypuff', 'pokemon');
+
+-- Insertando datos en la tabla Turno
+INSERT INTO Turno (id_turno, id_partida, id_jugador, id_carta, numero, operaciones_realizadas) VALUES
+(1, 1, 1, 1, 1, 2),
+(2, 1, 2, 3, 2, 1),
+(3, 1, 1, 7, 3, 3),
+(4, 1, 2, 8, 4, 2),
+(5, 2, 3, 2, 1, 1),
+(6, 2, 4, 4, 2, 2),
+(7, 2, 3, 6, 3, 1),
+(8, 3, 5, 5, 1, 2),
+(9, 3, 6, 10, 2, 1),
+(10, 4, 7, 12, 1, 3),
+(11, 4, 8, 14, 2, 1),
+(12, 5, 9, 15, 1, 2),
+(13, 6, 11, 11, 1, 1),
+(14, 7, 1, 2, 1, 2),
+(15, 8, 2, 8, 1, 1);
+
+-- Insertando datos en la tabla Energia
+INSERT INTO Energia (id_energia, id_carta, nombre, tipo) VALUES
+(1, 7, 'Energía Fuego', 'Fuego'),
+(2, 8, 'Energía Agua', 'Agua'),
+(3, 9, 'Energía Planta', 'Planta'),
+(4, 13, 'Energía Eléctrica', 'Eléctrico'),
+(5, 7, 'Energía Fuego', 'Fuego'),
+(6, 8, 'Energía Agua', 'Agua'),
+(7, 9, 'Energía Planta', 'Planta'),
+(8, 13, 'Energía Eléctrica', 'Eléctrico'),
+(9, 7, 'Energía Fuego', 'Fuego'),
+(10, 8, 'Energía Agua', 'Agua'),
+(11, 7, 'Energía Metal', 'Metal'),
+(12, 8, 'Energía Psíquica', 'Psíquico');
+
+-- Insertando datos en la tabla Pokemon
+INSERT INTO Pokemon (id_pokemon, id_tipo, id_carta, nombre, evolucion, puntos_salud, estado) VALUES
+(1, 4, 1, 'Pikachu', 'Raichu', 60, 'banca'),
+(2, 1, 2, 'Charizard', NULL, 120, 'banca'),
+(3, 2, 3, 'Blastoise', NULL, 120, 'banca'),
+(4, 3, 4, 'Venusaur', NULL, 120, 'banca'),
+(5, 5, 5, 'Mewtwo', NULL, 130, 'banca'),
+(6, 9, 10, 'Eevee', 'Varias', 50, 'banca'),
+(7, 9, 12, 'Snorlax', NULL, 100, 'banca'),
+(8, 9, 15, 'Jigglypuff', 'Wigglytuff', 50, 'banca'),
+(9, 1, 1, 'Charmander', 'Charmeleon', 50, 'banca'),
+(10, 2, 1, 'Squirtle', 'Wartortle', 50, 'banca'),
+(11, 3, 1, 'Bulbasaur', 'Ivysaur', 50, 'banca'),
+(12, 4, 1, 'Pichu', 'Pikachu', 30, 'banca');
+
+-- Insertando datos en la tabla Partidario
+INSERT INTO Partidario (id_partidario, id_carta, nombre, tipo, id_habilidad) VALUES
+(1, 6, 'Poción', 'herramienta', 6),
+(2, 11, 'Centro Pokémon', 'estadio', 11),
+(3, 14, 'Revivir', 'entrenador', 14),
+(4, 6, 'Super Poción', 'herramienta', 6),
+(5, 11, 'Gimnasio', 'estadio', 11),
+(6, 14, 'Cebo', 'entrenador', 14),
+(7, 6, 'Poción Máxima', 'herramienta', 6),
+(8, 11, 'Laboratorio', 'estadio', 11),
+(9, 14, 'Profesor Oak', 'entrenador', 14),
+(10, 6, 'Antídoto', 'herramienta', 6),
+(11, 11, 'Ciudad Luminalia', 'estadio', 11),
+(12, 14, 'Bill', 'entrenador', 14);
+
+-- Insertar datos en la tabla Tipo
+INSERT INTO Tipo (id_tipo, nombre, fortaleza, debilidad) VALUES
+(1, 'Fuego', 'Planta', 'Agua'),
+(2, 'Agua', 'Fuego', 'Planta'),
+(3, 'Planta', 'Agua', 'Fuego'),
+(4, 'Eléctrico', 'Agua', 'Tierra'),
+(5, 'Psíquico', 'Lucha', 'Oscuro'),
+(6, 'Lucha', 'Normal', 'Psíquico'),
+(7, 'Oscuro', 'Psíquico', 'Lucha'),
+(8, 'Metal', 'Roca', 'Fuego'),
+(9, 'Normal', NULL, 'Lucha'),
+(10, 'Dragón', 'Dragón', 'Hada'),
+(11, 'Hada', 'Dragón', 'Metal'),
+(12, 'Veneno', 'Planta', 'Psíquico'),
+(13, 'Tierra', 'Eléctrico', 'Agua'),
+(14, 'Volador', 'Lucha', 'Eléctrico'),
+(15, 'Hielo', 'Planta', 'Fuego');
+
+-- Insertando datos en tabla Ataque
+INSERT INTO Ataque (id_ataque, id_habilidad, id_pokemon, id_tipo, nombre, tipo, daño, efecto) VALUES
+(1, 1, 1, 4, 'Impactrueno', 'Eléctrico', 30, 'Daño básico'),
+(2, 2, 2, 1, 'Lanzallamas', 'Fuego', 50, 'Puede quemar al oponente'),
+(3, 3, 3, 2, 'Hidrobomba', 'Agua', 60, 'Daño potente'),
+(4, 4, 4, 3, 'Rayo solar', 'Planta', 40, 'Requiere carga previa'),
+(5, 5, 5, 5, 'Psíquico', 'Psíquico', 40, 'Multiplica por energías adjuntas'),
+(6, 10, 6, 9, 'Placaje', 'Normal', 20, 'Daño básico'),
+(7, 12, 7, 9, 'Golpe cuerpo', 'Normal', 60, 'El usuario se duerme'),
+(8, 15, 8, 9, 'Canto', 'Normal', 0, 'Duerme al oponente'),
+(9, 2, 9, 1, 'Ascuas', 'Fuego', 20, 'Puede quemar al oponente'),
+(10, 3, 10, 2, 'Pistola agua', 'Agua', 20, 'Daño básico'),
+(11, 4, 11, 3, 'Látigo cepa', 'Planta', 20, 'Daño básico'),
+(12, 1, 12, 4, 'Chispa', 'Eléctrico', 10, 'Daño básico');
+
+-- Insertando datos en la tabla Estado
+INSERT INTO Estado (id_estado, id_pokemon, nombre, tipo) VALUES
+(1, 1, 'Normal', 'nada'),
+(2, 2, 'Normal', 'nada'),
+(3, 3, 'Normal', 'nada'),
+(4, 4, 'Normal', 'nada'),
+(5, 5, 'Normal', 'nada'),
+(6, 6, 'Normal', 'nada'),
+(7, 7, 'Dormido', 'dormido'),
+(8, 8, 'Normal', 'nada'),
+(9, 9, 'Quemado', 'quemado'),
+(10, 10, 'Paralizado', 'paralizado'),
+(11, 11, 'Envenenado', 'envenenado'),
+(12, 12, 'Confundido', 'confundido');
+
+-- Insertando datos en la tabla Habilidad
+INSERT INTO Habilidad (id_carta, nombre, efecto) VALUES
+(1, 'Impactrueno', 'Hace 30 puntos de daño.'),
+(2, 'Lanzallamas', 'Hace 50 puntos de daño. Puede quemar al oponente.'),
+(3, 'Hidrobomba', 'Hace 60 puntos de daño.'),
+(4, 'Rayo solar', 'Hace 40 puntos de daño. Necesita cargarse un turno.'),
+(5, 'Psíquico', 'Hace 40 puntos de daño. El daño se multiplica por energías adjuntas.'),
+(6, 'Curación', 'Recupera 20 puntos de salud.'),
+(10, 'Adaptación', 'Cambia el tipo de Eevee según la energía adjunta.'),
+(11, 'Curación completa', 'Elimina todos los estados alterados y recupera toda la salud.'),
+(12, 'Cuerpo pesado', 'Recibe 20 puntos menos de daño.'),
+(14, 'Recuperación', 'Devuelve un Pokémon del descarte a tu mano.'),
+(15, 'Canto', 'El Pokémon oponente se duerme.');
