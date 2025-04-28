@@ -31,7 +31,7 @@ CREATE TABLE Partida (
 
 -- Tabla Carta_Premio (para las cartas de premio)
 CREATE TABLE Carta_Premio (
-    id_premio INT AUTO_INCREMENT DEFAULT 0,
+    id_premio INT DEFAULT 0,
     id_carta INT NOT NULL,
     id_jugador INT NOT NULL,
     id_partida INT NOT NULL,
@@ -149,11 +149,10 @@ CREATE TABLE Estado (
 -- Tabla Habilidad (para ataques y habilidades)
 -- no me se las habilidades de cada uno o si se repiten xd
 CREATE TABLE Habilidad (
-    id_carta INT NOT NULL,
+    id_habilidad INT NOT NULL,
     nombre VARCHAR(30) NOT NULL,
     efecto TEXT,
-    PRIMARY KEY (id_carta),
-    FOREIGN KEY (id_carta) REFERENCES Carta(id_carta)
+    PRIMARY KEY (id_habilidad)
 );
 
 -- Insertar datos en la tabla Jugador
@@ -349,7 +348,7 @@ INSERT INTO Estado (id_estado, id_pokemon, nombre, tipo) VALUES
 (12, 12, 'Confundido', 'confundido');
 
 -- Insertando datos en la tabla Habilidad
-INSERT INTO Habilidad (id_carta, nombre, efecto) VALUES
+INSERT INTO Habilidad (id_habilidad, nombre, efecto) VALUES
 (1, 'Impactrueno', 'Hace 30 puntos de daño.'),
 (2, 'Lanzallamas', 'Hace 50 puntos de daño. Puede quemar al oponente.'),
 (3, 'Hidrobomba', 'Hace 60 puntos de daño.'),
